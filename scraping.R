@@ -140,6 +140,10 @@ for (championnat in championnats) {
                 club_jeune <- str_trim(dernier_club)
               }
               
+              agent <- page_joueur |> 
+                html_element(xpath = "//span[contains(@class, 'info-table__content--regular') and contains(text(), 'Agent')]/following-sibling::span[1]") |> 
+                html_text(trim = TRUE)
+              
               
               position_principale_noeud <- page_joueur |> html_element(".detail-position__inner-box .detail-position__position") |> html_text(trim = TRUE)
               if (!is.na(position_principale_noeud)) position_principale <- position_principale_noeud
@@ -493,4 +497,6 @@ for (championnat in championnats) {
 df_final <- bind_rows(resultats)
 return(df_final)
 }
+
+#write.csv2(lancer_scraping(), "resultats_scraping.csv", row.names = FALSE)
 

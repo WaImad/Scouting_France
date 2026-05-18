@@ -26,9 +26,7 @@ jobs:
 
       - name: Lancer le scraping
         # C'est ici qu'on donne l'autorisation d'utiliser le coffre-fort
-        env:
-          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-        run: Rscript routine_hebdo.R
+        run: Rscript scraping.R
 
       - name: Sauvegarder le nouveau fichier CSV sur GitHub
         run: |

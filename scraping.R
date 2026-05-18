@@ -490,6 +490,7 @@ for (championnat in championnats) {
   
   
 }
-
+df_final <- bind_rows(resultats)
+return(df_final)
 }
-#df_final <- bind_rows(resultats)
+

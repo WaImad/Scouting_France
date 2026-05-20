@@ -16,7 +16,7 @@ lancer_scraping <- function() {
   url_transfermarkt <- "https://www.transfermarkt.fr/ligue-1/startseite/wettbewerb"
   url_club_passe_base = "https://www.transfermarkt.fr/m/startseite/verein/"
   
-  championnats <- c("CN2A","CN2B","CN2C","C3CM","C3NA","C3VL","C3PL","C3BR","C3NO","C3HF","C3IF","F19A","F19B","F19C","F19D")
+  championnats <- c("CN2A")#,"CN2B","CN2C","C3CM","C3NA","C3VL","C3PL","C3BR","C3NO","C3HF","C3IF","F19A","F19B","F19C","F19D")
   # Configuration du Headers
   
   

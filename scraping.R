@@ -548,6 +548,6 @@ lancer_scraping <- function() {
   }
 }
   
-#write.csv2(lancer_scraping(), "resultats_scraping.csv", row.names = FALSE)
+write.csv2(lancer_scraping(), "resultats_scraping.csv", row.names = FALSE)
   
   

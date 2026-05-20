@@ -73,10 +73,10 @@ lancer_scraping <- function() {
             Temps_Coupe_France <- 0; Temps_Etranger_Autres <- 0
             cartons_jaunes <- 0; cartons_jaunes_rouges <- 0; cartons_rouges <- 0
             
-            Buts_25_26 <- 0; Passes_25_26 <- 0; Division_25_26 <- ""; Pays_25_26 <- ""; Titularisations_25_26 <- 0; Groupes_25_26 <- ""; Pourcentage_titu_25_26 <- 0; Nombre_Matchs_Equipe_25_26 = 0; Club_25_26 = ""; Temps_de_jeu_25_26 = 0
-            Buts_24_25 <- 0; Passes_24_25 <- 0; Division_24_25 <- ""; Pays_24_25 <- ""; Titularisations_24_25 <- 0; Groupes_24_25 <- ""; Pourcentage_titu_24_25 <- 0; Nombre_Matchs_Equipe_24_25 = 0; Club_24_25 = ""; Temps_de_jeu_24_25 = 0
-            Buts_23_24 <- 0; Passes_23_24 <- 0; Division_23_24 <- ""; Pays_23_24 <- ""; Titularisations_23_24 <- 0; Groupes_23_24 <- ""; Pourcentage_titu_23_24 <- 0; Nombre_Matchs_Equipe_23_24 = 0; Club_23_24 = ""; Temps_de_jeu_23_24 = 0
-            Buts_22_23 <- 0; Passes_22_23 <- 0; Division_22_23 <- ""; Pays_22_23 <- ""; Titularisations_22_23 <- 0; Groupes_22_23 <- ""; Pourcentage_titu_22_23 <- 0; Nombre_Matchs_Equipe_22_23 = 0; Club_22_23 = ""; Temps_de_jeu_22_23 = 0
+            Buts_En_Cours <- 0; Passes_En_Cours <- 0; Division_En_Cours <- ""; Pays_En_Cours <- ""; Titularisations_En_Cours <- 0; Groupes_En_Cours <- ""; Pourcentage_titu_En_Cours <- 0; Nombre_Matchs_Equipe_En_Cours = 0; Club_En_Cours = ""; Temps_de_jeu_En_Cours = 0
+            Buts_N_1 <- 0; Passes_N_1 <- 0; Division_N_1 <- ""; Pays_N_1 <- ""; Titularisations_N_1 <- 0; Groupes_N_1 <- ""; Pourcentage_titu_N_1 <- 0; Nombre_Matchs_Equipe_N_1 = 0; Club_N_1 = ""; Temps_de_jeu_N_1 = 0
+            Buts_N_2 <- 0; Passes_N_2 <- 0; Division_N_2 <- ""; Pays_N_2 <- ""; Titularisations_N_2 <- 0; Groupes_N_2 <- ""; Pourcentage_titu_N_2 <- 0; Nombre_Matchs_Equipe_N_2 = 0; Club_N_2 = ""; Temps_de_jeu_N_2 = 0
+            Buts_N_3 <- 0; Passes_N_3 <- 0; Division_N_3 <- ""; Pays_N_3 <- ""; Titularisations_N_3 <- 0; Groupes_N_3 <- ""; Pourcentage_titu_N_3 <- 0; Nombre_Matchs_Equipe_N_3 = 0; Club_N_3 = ""; Temps_de_jeu_N_3 = 0
             
             url_joueur <- paste0(url_simple, joueur)
             
@@ -93,7 +93,8 @@ lancer_scraping <- function() {
               nom_prenom <- str_remove(nom_prenom, "^#\\d+\\s*")
               nom_prenom <- str_split(nom_prenom," ")[1][1]
               prenom <- nom_prenom[[1]][1]
-              nom <- nom_prenom[[1]][2]
+              nom <- nom_prenom[[1]][2:3] |> paste(collapse = " ")
+              if (grepl(" NA",nom)) nom <- str_remove(nom, " NA")
               
               print(nom)
               print(prenom)
@@ -280,9 +281,18 @@ lancer_scraping <- function() {
                   ### PARTIE SUR L'HISTORIQUE DU JOUEUR sur les 3 dernières saisons
                   if (is.data.frame(tableau_stats)) {
                     
-                    # les saisons qu'on veut obtenir ( à modifier à chaque début de saison)
-                    saisons_cibles <- c(2025, 2024, 2023, 2022)
-                    noms_saisons <- c("25_26", "24_25", "23_24", "22_23")
+                    # les saisons qu'on veut obtenir 
+                    annee_actuelle <- as.numeric(format(Sys.Date(), "%Y"))
+                    mois_actuel <- as.numeric(format(Sys.Date(), "%m"))
+                    debut_saison_actuelle <- ifelse(mois_actuel >= 7, annee_actuelle, annee_actuelle - 1) # Si on est en juillet ou après, la saison actuelle est celle de l'année en cours, sinon c'est celle de l'année précédente)
+                    
+                    saisons_cibles <- c(
+                      debut_saison_actuelle,       
+                      debut_saison_actuelle - 1,   
+                      debut_saison_actuelle - 2,   
+                      debut_saison_actuelle - 3    
+                    )
+                    noms_saisons <- c("En_Cours", "N_1", "N_2", "N_3")
                     
                     for (k in 1:length(saisons_cibles)) {
                       id_saison_actuel <- saisons_cibles[k]
@@ -290,8 +300,7 @@ lancer_scraping <- function() {
                       
                       # On filtre le tableau pour la saison en cours de la boucle
                       if ("gameInformation.season.id" %in% names(tableau_stats)) {
-                        stats_saison <- tableau_stats |> filter(gameInformation.season.id == id_saison_actuel & statistics.generalStatistics.participationState != "injured" & statistics.generalStatistics.participationState != "absent")
-                        
+                        stats_saison <- tableau_stats |> filter(gameInformation.season.id == id_saison_actuel & statistics.generalStatistics.participationState != "injured" & statistics.generalStatistics.participationState != "absent" & statistics.generalStatistics.participationState != "not in squad")
                       } else {
                         stats_saison <- data.frame() 
                         
@@ -421,14 +430,14 @@ lancer_scraping <- function() {
                         }
                         
                         # ENREGISTREMENT
-                        if (suffixe == "25_26") {
-                          Buts_25_26 <- saison_buts; Passes_25_26 <- saison_passes; Division_25_26 <- division; Pays_25_26 <- pays_club_saison; Titularisations_25_26 <- titularisations; Groupes_25_26 <- groupes; Pourcentage_titu_25_26 <- pourcentage_titu; Nombre_Matchs_Equipe_25_26 = nbr_matchs;  Club_25_26 = nom_club; Temps_de_jeu_25_26 = minutes_saison
-                        } else if (suffixe == "24_25") {
-                          Buts_24_25 <- saison_buts; Passes_24_25 <- saison_passes; Division_24_25 <- division; Pays_24_25 <- pays_club_saison; Titularisations_24_25 <- titularisations;Groupes_24_25 <- groupes; Pourcentage_titu_24_25 <- pourcentage_titu; Nombre_Matchs_Equipe_24_25 = nbr_matchs; Club_24_25 = nom_club; Temps_de_jeu_24_25 = minutes_saison
-                        } else if (suffixe == "23_24") {
-                          Buts_23_24 <- saison_buts; Passes_23_24 <- saison_passes; Division_23_24 <- division; Pays_23_24 <- pays_club_saison; Titularisations_23_24 <- titularisations; Groupes_23_24 <- groupes; Pourcentage_titu_23_24 <- pourcentage_titu; Nombre_Matchs_Equipe_23_24 = nbr_matchs; Club_23_24 = nom_club; Temps_de_jeu_23_24 = minutes_saison
-                        } else if (suffixe == "22_23") {
-                          Buts_22_23 <- saison_buts; Passes_22_23 <- saison_passes; Division_22_23 <- division; Pays_22_23 <- pays_club_saison; Titularisations_22_23 <- titularisations; Groupes_22_23 <- groupes; Pourcentage_titu_22_23 <- pourcentage_titu; Nombre_Matchs_Equipe_22_23 = nbr_matchs; Club_22_23 = nom_club; Temps_de_jeu_22_23 = minutes_saison
+                        if (suffixe == "En_Cours") {
+                          Buts_En_Cours <- saison_buts; Passes_En_Cours <- saison_passes; Division_En_Cours <- division; Pays_En_Cours <- pays_club_saison; Titularisations_En_Cours <- titularisations; Groupes_En_Cours <- groupes; Pourcentage_titu_En_Cours <- pourcentage_titu; Nombre_Matchs_Equipe_En_Cours = nbr_matchs;  Club_En_Cours = nom_club; Temps_de_jeu_En_Cours = minutes_saison
+                        } else if (suffixe == "N_1") {
+                          Buts_N_1 <- saison_buts; Passes_N_1 <- saison_passes; Division_N_1 <- division; Pays_N_1 <- pays_club_saison; Titularisations_N_1 <- titularisations;Groupes_N_1 <- groupes; Pourcentage_titu_N_1 <- pourcentage_titu; Nombre_Matchs_Equipe_N_1 = nbr_matchs; Club_N_1 = nom_club; Temps_de_jeu_N_1 = minutes_saison
+                        } else if (suffixe == "N_2") {
+                          Buts_N_2 <- saison_buts; Passes_N_2 <- saison_passes; Division_N_2 <- division; Pays_N_2 <- pays_club_saison; Titularisations_N_2 <- titularisations; Groupes_N_2 <- groupes; Pourcentage_titu_N_2 <- pourcentage_titu; Nombre_Matchs_Equipe_N_2 = nbr_matchs; Club_N_2 = nom_club; Temps_de_jeu_N_2 = minutes_saison
+                        } else if (suffixe == "N_3") {
+                          Buts_N_3 <- saison_buts; Passes_N_3 <- saison_passes; Division_N_3 <- division; Pays_N_3 <- pays_club_saison; Titularisations_N_3 <- titularisations; Groupes_N_3 <- groupes; Pourcentage_titu_N_3 <- pourcentage_titu; Nombre_Matchs_Equipe_N_3 = nbr_matchs; Club_N_3 = nom_club; Temps_de_jeu_N_3 = minutes_saison
                         }
                       }
                     }
@@ -468,54 +477,54 @@ lancer_scraping <- function() {
                 Photo_Club = photo_club,
                 Pays_Club_actuel = "France",
                 
-                # Saison 25/26
-                Club_25_26 = Club_25_26,
-                Titu_25_26 = Titularisations_25_26,
-                Nombre_Matchs_Equipe_25_26 = Nombre_Matchs_Equipe_25_26,
-                Pourcentage_titu_25_26 = Pourcentage_titu_25_26,
-                Temps_de_jeu_25_26 = Temps_de_jeu_25_26,
-                Buts_25_26 = Buts_25_26,
-                Passes_25_26 = Passes_25_26,
-                Division_25_26 = Division_25_26,
-                Groupes_25_26 = Groupes_25_26,
-                Pays_25_26 = Pays_25_26,
+                # Saison en cours
+                Club_En_Cours = Club_En_Cours,
+                Titu_En_Cours = Titularisations_En_Cours,
+                Apparition_Groupe_En_Cours = Nombre_Matchs_Equipe_En_Cours,
+                Pourcentage_titu_En_Cours = Pourcentage_titu_En_Cours,
+                Temps_de_jeu_En_Cours = Temps_de_jeu_En_Cours,
+                Buts_En_Cours = Buts_En_Cours,
+                Passes_En_Cours = Passes_En_Cours,
+                Division_En_Cours = Division_En_Cours,
+                Groupes_En_Cours = Groupes_En_Cours,
+                Pays_En_Cours = Pays_En_Cours,
                 
                 
-                # Saison 24/25
-                Club_24_25 = Club_24_25,
-                Titu_24_25 = Titularisations_24_25,
-                Nombre_Matchs_Equipe_24_25 = Nombre_Matchs_Equipe_24_25,
-                Pourcentage_titu_24_25 = Pourcentage_titu_24_25,
-                Temps_de_jeu_24_25 = Temps_de_jeu_24_25,
-                Buts_24_25 = Buts_24_25,
-                Passes_24_25 = Passes_24_25,
-                Division_24_25 = Division_24_25,
-                Groupes_24_25 = Groupes_24_25,
-                Pays_24_25 = Pays_24_25,
+                # Saison N-1
+                Club_N_1 = Club_N_1,
+                Titu_N_1 = Titularisations_N_1,
+                Apparition_Groupe_N_1 = Nombre_Matchs_Equipe_N_1,
+                Pourcentage_titu_N_1 = Pourcentage_titu_N_1,
+                Temps_de_jeu_N_1 = Temps_de_jeu_N_1,
+                Buts_N_1 = Buts_N_1,
+                Passes_N_1 = Passes_N_1,
+                Division_N_1 = Division_N_1,
+                Groupes_N_1 = Groupes_N_1,
+                Pays_N_1 = Pays_N_1,
                 
-                # Saison 23/24
-                Club_23_24 = Club_23_24,
-                Titu_23_24 = Titularisations_23_24,
-                Nombre_Matchs_Equipe_23_24 = Nombre_Matchs_Equipe_23_24,
-                Pourcentage_titu_23_24 = Pourcentage_titu_23_24,
-                Temps_de_jeu_23_24 = Temps_de_jeu_23_24,
-                Buts_23_24 = Buts_23_24,
-                Passes_23_24 = Passes_23_24,
-                Division_23_24 = Division_23_24,
-                Groupes_23_24 = Groupes_23_24,
-                Pays_23_24 = Pays_23_24,
+                # Saison N-2
+                Club_N_2 = Club_N_2,
+                Titu_N_2 = Titularisations_N_2,
+                Apparition_Groupe_N_2 = Nombre_Matchs_Equipe_N_2,
+                Pourcentage_titu_N_2 = Pourcentage_titu_N_2,
+                Temps_de_jeu_N_2 = Temps_de_jeu_N_2,
+                Buts_N_2 = Buts_N_2,
+                Passes_N_2 = Passes_N_2,
+                Division_N_2 = Division_N_2,
+                Groupes_N_2 = Groupes_N_2,
+                Pays_N_2 = Pays_N_2,
                 
-                # Saison 22/23
-                Club_22_23 = Club_22_23,
-                Titu_22_23 = Titularisations_22_23,
-                Nombre_Matchs_Equipe_22_23 = Nombre_Matchs_Equipe_22_23,
-                Pourcentage_titu_22_23 = Pourcentage_titu_22_23,
-                Temps_de_jeu_22_23 = Temps_de_jeu_22_23,
-                Buts_22_23 = Buts_22_23,
-                Passes_22_23 = Passes_22_23,
-                Division_22_23 = Division_22_23,
-                Groupes_22_23 = Groupes_22_23,
-                Pays_22_23 = Pays_22_23,
+                # Saison N-3
+                Club_N_3 = Club_N_3,
+                Titu_N_3 = Titularisations_N_3,
+                Apparition_Groupe_N_3 = Nombre_Matchs_Equipe_N_3,
+                Pourcentage_titu_N_3 = Pourcentage_titu_N_3,
+                Temps_de_jeu_N_3 = Temps_de_jeu_N_3,
+                Buts_N_3 = Buts_N_3,
+                Passes_N_3 = Passes_N_3,
+                Division_N_3 = Division_N_3,
+                Groupes_N_3 = Groupes_N_3,
+                Pays_N_3 = Pays_N_3,
                 Fin_contrat = fin_contrat,
                 
                 
@@ -539,7 +548,6 @@ lancer_scraping <- function() {
   }
 }
   
-  
-write.csv2(lancer_scraping(), "resultats_scraping.csv", row.names = FALSE)
+#write.csv2(lancer_scraping(), "resultats_scraping.csv", row.names = FALSE)
   
   

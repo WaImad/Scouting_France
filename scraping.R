@@ -41,7 +41,7 @@ lancer_scraping <- function() {
   url_transfermarkt <- "https://www.transfermarkt.fr/ligue-1/startseite/wettbewerb"
   url_club_passe_base = "https://www.transfermarkt.fr/m/startseite/verein/"
   
-  championnats <- c("CN2A","CN2B","CN2C","C3CM","C3NA","C3VL","C3PL","C3BR","C3NO","C3HF","C3IF","F19A","F19B","F19C","F19D")
+  championnats <- c("CN2A")#,"CN2B","CN2C","C3CM","C3NA","C3VL","C3PL","C3BR","C3NO","C3HF","C3IF","F19A","F19B","F19C","F19D")
   
   resultats <- list()
   
@@ -98,7 +98,7 @@ lancer_scraping <- function() {
         fin_contrat <- ""
         
         Temps_L1 <- 0; Temps_L2 <- 0; Temps_N1 <- 0; Temps_N2 <- 0; Temps_N3 <- 0
-        Temps_Coupe_France <- 0; Temps_Etranger_Autres <- 0
+        Temps_Coupe_France <- 0; Temps_Jeune <- 0 ;Temps_Etranger_Autres <- 0
         cartons_jaunes <- 0; cartons_jaunes_rouges <- 0; cartons_rouges <- 0
         
         Buts_En_Cours <- 0; Passes_En_Cours <- 0; Division_En_Cours <- ""; Pays_En_Cours <- ""; Titularisations_En_Cours <- 0; Groupes_En_Cours <- ""; Pourcentage_titu_En_Cours <- 0; Nombre_Matchs_Equipe_En_Cours = 0; Club_En_Cours = ""; Temps_de_jeu_En_Cours = 0
@@ -224,8 +224,9 @@ lancer_scraping <- function() {
                   }
                 }
                 
-                # Récupérer l'ID de la compétition
-                competition_id <- tableau_stats$gameInformation.competitionId[j]
+                # Récupérer l'ID de la compétition la plus présente dans tableau_stats
+                competition_counts <- table(tableau_stats$gameInformation.competitionId[j])
+                competition_id <- names(competition_counts)[which.max(competition_counts)]
                 minutes <- tableau_stats$statistics.playingTimeStatistics.playedMinutes[j]
                 
                 if (is.na(competition_id) || is.na(minutes)) {
@@ -247,7 +248,10 @@ lancer_scraping <- function() {
                   Temps_N3 <- Temps_N3 + minutes
                 } else if (comp_id_lower == "frc") {
                   Temps_Coupe_France <- Temps_Coupe_France + minutes
-                } else {
+                } else if (grepl("^f19", comp_id_lower)) { 
+                  Temps_Jeune <- Temps_Jeune + minutes
+                }
+                else {
                   Temps_Etranger_Autres <- Temps_Etranger_Autres + minutes
                 }
               }
@@ -407,6 +411,7 @@ lancer_scraping <- function() {
           Temps_N3 = Temps_N3,
           Temps_Coupe_France = Temps_Coupe_France,
           Temps_Etranger_Jeunes = Temps_Etranger_Autres,
+          Temps_Jeune = Temps_Jeune,
           Cartons_jaunes = cartons_jaunes,
           Dont_Second_jaunes = cartons_jaunes_rouges,
           Cartons_rouges = cartons_rouges,
@@ -483,4 +488,4 @@ lancer_scraping <- function() {
   return(df_final)
 }
 
-write.csv2(lancer_scraping(), "resultats_scraping.csv", row.names = FALSE)
+#write.csv2(lancer_scraping(), "resultats_scraping.csv", row.names = FALSE)

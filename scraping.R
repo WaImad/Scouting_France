@@ -487,5 +487,4 @@ lancer_scraping <- function() {
   df_final <- bind_rows(resultats)
   return(df_final)
 }
-
-#write.csv2(lancer_scraping(), "resultats_scraping.csv", row.names = FALSE)
+write.csv2(lancer_scraping(), "resultats_scraping.csv", row.names = FALSE)

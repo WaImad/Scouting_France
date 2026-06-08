@@ -225,8 +225,7 @@ lancer_scraping <- function() {
                 }
                 
                 # Récupérer l'ID de la compétition la plus présente dans tableau_stats
-                competition_counts <- table(tableau_stats$gameInformation.competitionId[j])
-                competition_id <- names(competition_counts)[which.max(competition_counts)]
+                competition_id <- tableau_stats$gameInformation.competitionId[j]
                 minutes <- tableau_stats$statistics.playingTimeStatistics.playedMinutes[j]
                 
                 if (is.na(competition_id) || is.na(minutes)) {
@@ -294,7 +293,8 @@ lancer_scraping <- function() {
                   minutes_saison = 0
                   
                   if (nrow(stats_saison) > 0) {
-                    competition_id <- stats_saison$gameInformation.competitionId[1]
+                    competition_counts <- table(stats_saison$gameInformation.competitionId)
+                    competition_id <- names(competition_counts)[which.max(competition_counts)]
                     comp_id_lower <- tolower(as.character(competition_id))
                     
                     # PAYS du CHAMPIONNAT
@@ -487,4 +487,5 @@ lancer_scraping <- function() {
   df_final <- bind_rows(resultats)
   return(df_final)
 }
+
 write.csv2(lancer_scraping(), "resultats_scraping.csv", row.names = FALSE)
